@@ -137,9 +137,7 @@ async function main() {
   const res = await chrome.storage.local.get()
   if (res[IS_ENABLE] !== true) return
   const isInBookMark = await inBookMark()
-  if (!isInBookMark && location.pathname !== 'torrents.php') {
-    return
-  }
+  if (!isInBookMark) return
   // start message listener
   chrome.runtime.onMessage.addListener(handleMessage)
   // add button to page
