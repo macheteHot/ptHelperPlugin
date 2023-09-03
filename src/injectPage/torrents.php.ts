@@ -8,7 +8,7 @@ import {
 } from '../constants'
 import { Qmsg } from './tools/Qmsg'
 
-async function addTorrentPageDownload(res: AnyObj) {
+async function addTorrentPageDownload(storage: AnyObj) {
   if (window.top !== window.self) return // in iframe
   const { pathname } = window.location
   if (!/^\/torrents.php$/.test(pathname)) return // not in torrents
@@ -31,9 +31,9 @@ async function addTorrentPageDownload(res: AnyObj) {
           event: 'downloadBtClient',
           data: {
             urls: [downloadLink],
-            clientType: res[DOWNLOAD_CLIENT_TYPE],
-            clientUrl: res[DOWNLOAD_CLIENT_URL],
-            savePath: res[DOWNLOAD_SAVEPATH]
+            clientType: storage[DOWNLOAD_CLIENT_TYPE],
+            clientUrl: storage[DOWNLOAD_CLIENT_URL],
+            savePath: storage[DOWNLOAD_SAVEPATH]
           }
         } as MessageType)
       } else {
@@ -70,6 +70,44 @@ function handleMessage(request: MessageType) {
   }
 }
 
+function downloadAllTorrent(storage: AnyObj) {
+  const btn = document.createElement('button')
+  Object.assign(btn.style, {
+    border: '0',
+    background: '#3498db',
+    position: 'fixed',
+    top: '120px',
+    right: '90px',
+    color: '#FFF',
+    padding: '8px 16px',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  })
+
+  btn.innerText = '下载当前页所有种子'
+  btn.addEventListener('click', async () => {
+    const trList = document.querySelectorAll(
+      '.torrents>tbody>tr:not(:first-child)'
+    ) as NodeListOf<HTMLTableRowElement>
+    const linkList = Array.from(trList).map((item) => {
+      const match = item.innerHTML.match(/"(download\.php\?id=.+?)"/)
+
+      return location.origin + '/' + match?.[1] ?? ''
+    })
+    const newList = [...new Set(linkList)]
+    chrome.runtime.sendMessage({
+      event: 'downloadBtClient',
+      data: {
+        urls: newList,
+        clientType: storage[DOWNLOAD_CLIENT_TYPE],
+        clientUrl: storage[DOWNLOAD_CLIENT_URL],
+        savePath: storage[DOWNLOAD_SAVEPATH]
+      }
+    } as MessageType)
+  })
+  document.body.appendChild(btn)
+}
+
 async function main() {
   const res = await chrome.storage.local.get()
   if (!document.body.innerHTML.includes('NexusPHP')) return
@@ -78,6 +116,8 @@ async function main() {
   chrome.runtime.onMessage.addListener(handleMessage)
   // add button to page
   addTorrentPageDownload(res)
+  // add download all
+  downloadAllTorrent(res)
 }
 
 main()
