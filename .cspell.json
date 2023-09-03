@@ -1,0 +1,15 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "camelcase",
+    "nightwatch",
+    "QMSG",
+    "rushstack",
+    "savepath",
+    "unocss",
+    "unplugin",
+    "vespaiach"
+  ],
+  "ignorePaths": []
+}

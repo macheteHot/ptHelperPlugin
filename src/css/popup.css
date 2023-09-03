@@ -1,0 +1,9 @@
+html,
+body,
+#app {
+  width: 258px;
+  min-height: 268px;
+}
+body {
+  background-color: #ebebea;
+}

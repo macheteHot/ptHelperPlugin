@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "pt助手",
+  "description": "更好的pt浏览体验",
+  "version": "0.0.1",
+  "icons": {
+    "16": "assets/images/icon-16.png",
+    "32": "assets/images/icon-32.png",
+    "48": "assets/images/icon-48.png",
+    "128": "assets/images/icon-128.png"
+  },
+  "action": {
+    "default_icon": "assets/images/icon-128.png",
+    "default_title": "pt助手",
+    "default_popup": "../popup.html"
+  },
+  "options_ui": {
+    "page": "../options.html",
+    "open_in_tab": true
+  },
+  "permissions": ["storage", "cookies", "webRequest"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "injectPage/service-worker.ts"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/torrents.php*", "https://*/torrents.php*"],
+      "js": ["injectPage/torrents.php.ts"],
+      "match_origin_as_fallback": false,
+      "match_about_blank": false,
+      "run_at": "document_end"
+    }
+  ]
+}
