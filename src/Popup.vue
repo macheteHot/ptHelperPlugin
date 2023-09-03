@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { Check, Close, Info, Tool } from '@icon-park/vue-next'
+import { Check, Close, Github, Info, Tool } from '@icon-park/vue-next'
 import { IS_ENABLE, DOWNLOAD_CLIENT_URL } from '@/constants/index'
 import useChromeStorage from './tools/useStorage'
 const [chromeData, setChromeData] = useChromeStorage()
@@ -11,6 +11,22 @@ function toggleEnable() {
 
 function toOptions() {
   chrome.runtime.openOptionsPage()
+}
+
+function toGithub() {
+  chrome.tabs.create({
+    url: 'https://github.com/macheteHot/ptHelperPlugin'
+  })
+}
+function toReleases() {
+  chrome.tabs.create({
+    url: 'https://github.com/macheteHot/ptHelperPlugin/releases'
+  })
+}
+function toIssues() {
+  chrome.tabs.create({
+    url: 'https://github.com/macheteHot/ptHelperPlugin/issues'
+  })
 }
 </script>
 
@@ -30,13 +46,19 @@ function toOptions() {
       <span class="c-#c45656" v-if="!chromeData[DOWNLOAD_CLIENT_URL]">你还没有设置下载器地址!</span>
     </div>
     <div>
-      <Info class="m-t-2" theme="outline" size="15" fill="#337ecc" />
+      <Info class="position-relative t-3" theme="outline" size="15" fill="#337ecc" />
       <div>
-        <span class="cursor-pointer">帮助</span>
+        <span @click="toIssues" class="cursor-pointer">帮助</span>
         <el-divider direction="vertical" class="m-x-4" border-style="" />
-        <span class="cursor-pointer">更新日志</span>
+        <span @click="toReleases" class="cursor-pointer">更新日志</span>
         <el-divider direction="vertical" class="m-x-4" border-style="" />
-        <div><github theme="outline" size="42" fill="#333" /></div>
+        <Github
+          @class="toGithub"
+          class="position-relative t-3"
+          theme="outline"
+          size="16"
+          fill="#333"
+        />
       </div>
     </div>
     <div @click="toOptions" class="cursor-pointer">
