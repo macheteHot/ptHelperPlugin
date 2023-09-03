@@ -25,8 +25,8 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/torrents.php*", "https://*/torrents.php*"],
-      "js": ["injectPage/torrents.php.ts"],
+      "matches": ["<all_urls>"],
+      "js": ["injectPage/torrents.php.ts", "injectPage/removeWatermark.ts"],
       "match_origin_as_fallback": false,
       "match_about_blank": false,
       "run_at": "document_end"

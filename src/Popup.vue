@@ -1,9 +1,16 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { Check, Close, Github, Info, Tool } from '@icon-park/vue-next'
-import { IS_ENABLE, DOWNLOAD_CLIENT_URL } from '@/constants/index'
+import { AddWeb, Check, Close, Github, Info, Tool } from '@icon-park/vue-next'
+import { IS_ENABLE, DOWNLOAD_CLIENT_URL, BOOK_MARK_TORRENTS } from '@/constants/index'
 import useChromeStorage from './tools/useStorage'
+import { sleep } from './tools'
+
 const [chromeData, setChromeData] = useChromeStorage()
+async function getCurrentTab() {
+  const queryOptions = { active: true, lastFocusedWindow: true }
+  const [tab] = await chrome.tabs.query(queryOptions)
+  return tab
+}
 
 function toggleEnable() {
   setChromeData({ [IS_ENABLE]: !chromeData[IS_ENABLE] })
@@ -28,6 +35,20 @@ function toIssues() {
     url: 'https://github.com/macheteHot/ptHelperPlugin/issues'
   })
 }
+
+async function addPageTorrents() {
+  const { url: currentUrl, id } = await getCurrentTab()
+  const urlObj = new URL(currentUrl ?? '')
+  const bookMarkList = Array.isArray(chromeData[BOOK_MARK_TORRENTS])
+    ? (chromeData[BOOK_MARK_TORRENTS] as string[])
+    : []
+  setChromeData({
+    [BOOK_MARK_TORRENTS]: [...new Set([...bookMarkList, `${urlObj.origin}${urlObj.pathname}`])]
+  })
+  ElMessage.success('添加成功')
+  await sleep(1500)
+  chrome.tabs.reload(id as number)
+}
 </script>
 
 <template>
@@ -41,9 +62,11 @@ function toIssues() {
         fill="#27ae60"
       />
       <Close v-show="!chromeData[IS_ENABLE]" theme="outline" size="15" fill="#c45656" />
-      <span v-show="chromeData[IS_ENABLE]">已启用</span>
-      <span v-show="!chromeData[IS_ENABLE]">已停用</span>
-      <span class="c-#c45656" v-if="!chromeData[DOWNLOAD_CLIENT_URL]">你还没有设置下载器地址!</span>
+      <span v-show="chromeData[IS_ENABLE]">一键下载已启用</span>
+      <span v-show="!chromeData[IS_ENABLE]">一键下载已停用</span>
+      <span class="c-#c45656 m-l-30" v-if="!chromeData[DOWNLOAD_CLIENT_URL]"
+        >没有设置下载器地址!</span
+      >
     </div>
     <div>
       <Info class="position-relative t-3" theme="outline" size="15" fill="#337ecc" />
@@ -60,6 +83,10 @@ function toIssues() {
           fill="#333"
         />
       </div>
+    </div>
+    <div class="cursor-pointer" @click="addPageTorrents">
+      <AddWeb class="position-relative t-2" theme="outline" size="15" fill="#333" />
+      <div>添加当前页为种子列表页</div>
     </div>
     <div @click="toOptions" class="cursor-pointer">
       <Tool class="m-t-2" theme="outline" size="15" fill="#73767a" />
@@ -87,4 +114,3 @@ function toIssues() {
   border-color: #000;
 }
 </style>
-@/service-worker/index

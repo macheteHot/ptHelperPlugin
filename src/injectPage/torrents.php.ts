@@ -1,6 +1,7 @@
 import type { MessageType } from './MessageType'
 import type { AnyObj } from '@/interface/index_interface'
 import {
+  BOOK_MARK_TORRENTS,
   DOWNLOAD_CLIENT_TYPE,
   DOWNLOAD_CLIENT_URL,
   DOWNLOAD_SAVEPATH,
@@ -10,8 +11,13 @@ import { Qmsg } from './tools/Qmsg'
 
 async function addTorrentPageDownload(storage: AnyObj) {
   if (window.top !== window.self) return // in iframe
-  const { pathname } = window.location
-  if (!/^\/torrents.php$/.test(pathname)) return // not in torrents
+  const { pathname, origin } = window.location
+  const bookmarkList = Array.isArray(storage[BOOK_MARK_TORRENTS])
+    ? (storage[BOOK_MARK_TORRENTS] as string[])
+    : []
+  if (!bookmarkList.includes(`${origin}${pathname}`)) {
+    if (!/^\/torrents.php$/.test(pathname)) return // not in torrents
+  }
 
   const trList = document.querySelectorAll(
     '.torrents>tbody>tr:not(:first-child)'
@@ -45,8 +51,17 @@ async function addTorrentPageDownload(storage: AnyObj) {
       if (tr.querySelector('div[title^=leeching]') || tr.querySelector('div[title^=seeding]')) {
         btn.style.visibility = 'hidden'
       }
-      td.insertBefore(btn, td.firstChild)
     }
+    const container = document.createElement('div')
+    Object.assign(container.style, {
+      display: 'flex',
+      alignItems: 'center'
+    })
+    container.appendChild(btn)
+    while (td?.firstChild) {
+      container.appendChild(td.firstChild)
+    }
+    td?.appendChild(container)
   })
 }
 
@@ -81,7 +96,8 @@ function downloadAllTorrent(storage: AnyObj) {
     color: '#FFF',
     padding: '8px 16px',
     borderRadius: '4px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    userSelect: 'none'
   })
 
   btn.innerText = '下载当前页所有种子'
@@ -91,7 +107,6 @@ function downloadAllTorrent(storage: AnyObj) {
     ) as NodeListOf<HTMLTableRowElement>
     const linkList = Array.from(trList).map((item) => {
       const match = item.innerHTML.match(/"(download\.php\?id=.+?)"/)
-
       return location.origin + '/' + match?.[1] ?? ''
     })
     const newList = [...new Set(linkList)]
@@ -108,10 +123,23 @@ function downloadAllTorrent(storage: AnyObj) {
   document.body.appendChild(btn)
 }
 
+async function inBookMark() {
+  const res = await chrome.storage.local.get()
+  const bookmarkList = Array.isArray(res[BOOK_MARK_TORRENTS])
+    ? (res[BOOK_MARK_TORRENTS] as string[])
+    : []
+  const { pathname, origin } = window.location
+
+  return bookmarkList.includes(`${origin}${pathname}`)
+}
+
 async function main() {
   const res = await chrome.storage.local.get()
-  if (!document.body.innerHTML.includes('NexusPHP')) return
   if (res[IS_ENABLE] !== true) return
+  const isInBookMark = await inBookMark()
+  if (!isInBookMark && location.pathname !== 'torrents.php') {
+    return
+  }
   // start message listener
   chrome.runtime.onMessage.addListener(handleMessage)
   // add button to page

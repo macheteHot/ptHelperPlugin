@@ -52,7 +52,7 @@ async function submit() {
 <template>
   <el-card class="w-480">
     <template #header>
-      <div class="card-header">
+      <div class="h-20 flex-space-between-center fs-18">
         <span>下载器设置</span>
       </div>
     </template>
