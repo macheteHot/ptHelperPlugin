@@ -106,8 +106,8 @@ function downloadAllTorrent(storage: AnyObj) {
       '.torrents>tbody>tr:not(:first-child)'
     ) as NodeListOf<HTMLTableRowElement>
     const linkList = Array.from(trList).map((item) => {
-      const match = item.innerHTML.match(/"(download\.php\?id=.+?)"/)
-      return location.origin + '/' + match?.[1] ?? ''
+      const [, match = ''] = item.innerHTML.match(/"(download\.php\?id=.+?)"/) as [string, string]
+      return `${location.origin}/${match}&letdown=1`
     })
     const newList = [...new Set(linkList)]
     chrome.runtime.sendMessage({
